@@ -112,10 +112,11 @@ def call_asset(client, private_key, appid, total_nft, unit_name, asset_name, fil
     # split transaction group
     print("Splitting unsigned transaction group...")
 
-    # signing the transactions
+    # signing the transactions for app call txn
     stxn_1 = txn_1.sign(creatorprivate_key)
     print("Investor signed txn_1: ", stxn_1.get_txid())
 
+    # signing the transaction for asset creation
     stxn_2 = txn_2.sign(creatorprivate_key)
     print("Investor signed txn_2: ", stxn_2.get_txid())
 
