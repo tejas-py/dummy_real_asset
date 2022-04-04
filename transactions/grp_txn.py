@@ -1,7 +1,7 @@
 from algosdk.future import transaction
 from algosdk import account, mnemonic
 import utilities
-import algod_connection
+from billiard.five import string
 
 local_ints = 1
 local_bytes = 1
@@ -46,8 +46,10 @@ int 1
 
 
 # Create new campaign
-def create_app(client, private_key, approval_program, clear_program, globalSchema, localSchema):
+def create_app(client, mnemonics):
     print("Creating application...")
+
+    private_key = mnemonic.to_private_key(mnemonics)
 
     # Fetching public and private address from the passphrase, passed as argument.
     address = account.address_from_private_key(private_key)
@@ -60,9 +62,12 @@ def create_app(client, private_key, approval_program, clear_program, globalSchem
 
     params = client.suggested_params()
 
+    approvalprogram = utilities.compile_program(client, approval_program_source_initial)
+    clearprogram = utilities.compile_program(client, clear_program_source)
+
     txn = transaction.ApplicationCreateTxn(sender, params, on_complete,
-                                           approval_program, clear_program,
-                                           globalSchema, localSchema)
+                                           approvalprogram, clearprogram,
+                                           global_schema, local_schema)
 
     signed_txn = txn.sign(private_key)
     tx_id = signed_txn.transaction.get_txid()
@@ -77,10 +82,10 @@ def create_app(client, private_key, approval_program, clear_program, globalSchem
 
 
 # creator create asset and calling app id.
-def call_asset(client, private_key, appid, total_nft, unit_name, asset_name, file_path, note):
+def call_asset(client, mnemonics, appid, total_nft, url_path, asset_note):
     # define address from private key of creator
+    private_key = mnemonic.to_private_key(mnemonics)
     creator_account = account.address_from_private_key(private_key)
-    creatorprivate_key = private_key
 
     # set suggested params
     params = client.suggested_params()
@@ -95,10 +100,13 @@ def call_asset(client, private_key, appid, total_nft, unit_name, asset_name, fil
     print("Created Transaction 1: ", txn_1.get_txid())
 
     # creating asset: transaction 2
-    txn_2 = transaction.AssetConfigTxn(sender=sender, sp=params, total=total_nft, default_frozen=False,
-                                       unit_name=unit_name, asset_name=asset_name, manager=creator_account,
+    params_NFT = client.suggested_params()
+    # params_NFT.fee = 25000000
+
+    txn_2 = transaction.AssetConfigTxn(sender=sender, sp=params_NFT, total=total_nft, default_frozen=False,
+                                       unit_name="Sports", asset_name="Mystery box Rome Edition", manager=creator_account,
                                        reserve=creator_account, freeze=creator_account, clawback=creator_account,
-                                       url=file_path, note=note, decimals=0)
+                                       url=url_path, note=asset_note, decimals=0)
 
     print("Created Transaction 2: ", txn_2.get_txid())
 
@@ -113,12 +121,13 @@ def call_asset(client, private_key, appid, total_nft, unit_name, asset_name, fil
     print("Splitting unsigned transaction group...")
 
     # signing the transactions for app call txn
-    stxn_1 = txn_1.sign(creatorprivate_key)
+    stxn_1 = txn_1.sign(private_key)
     print("Investor signed txn_1: ", stxn_1.get_txid())
 
     # signing the transaction for asset creation
-    stxn_2 = txn_2.sign(creatorprivate_key)
-    print("Investor signed txn_2: ", stxn_2.get_txid())
+    stxn_2 = txn_2.sign(private_key)
+    tx_id2 = stxn_2.get_txid()
+    print("Investor signed txn_2: ", tx_id2)
 
     # grouping the sign transactions
     signedGroup = [stxn_1, stxn_2]
@@ -126,26 +135,7 @@ def call_asset(client, private_key, appid, total_nft, unit_name, asset_name, fil
     # send transactions
     print("Sending transaction group...")
     tx_id = client.send_transactions(signedGroup)
+    print(tx_id)
 
-    return tx_id
-
-
-if __name__ == "__main__":
-    algod_client = algod_connection.algo_conn()
-
-    passphrase = "focus silent connect teach minor subject hole observe enemy link recipe screen random core run " \
-                 "target peanut autumn summer wall expose already tobacco above find"
-
-    creator_private_key = mnemonic.to_private_key(passphrase)
-    approvalprogram = utilities.compile_program(algod_client, approval_program_source_initial)
-    clearprogram = utilities.compile_program(algod_client, clear_program_source)
-
-    app_id = create_app(algod_client, creator_private_key, approvalprogram, clearprogram, global_schema, local_schema)
-
-    unitName = "Webmob"
-    assetName = "Tejas"
-    url_path = "www.webmobinfo.ch"
-    asset_note = "Real"
-    call_asset(algod_client, creator_private_key, app_id, 1, unitName, assetName, url_path, asset_note)
-
+    return string(tx_id2)
 
