@@ -5,8 +5,15 @@ import transactions.user_NFT
 import transactions.total_NFT
 import transactions.unfrozen_NFT
 import json
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(app)
+cors = CORS(app, resources={
+    r"/*": {
+        "origin": "*"
+    }
+})
 
 algod_client = algo_conn()
 indexerConnection = connect_indexer()
