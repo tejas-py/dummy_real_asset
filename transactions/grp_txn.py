@@ -101,7 +101,7 @@ def call_asset(client, mnemonics, appid, total_nft, url_path, asset_note):
 
     # creating asset: transaction 2
     params_NFT = client.suggested_params()
-    # params_NFT.fee = 25000000
+    # params_NFT.fee = 62500
 
     txn_2 = transaction.AssetConfigTxn(sender=sender, sp=params_NFT, total=total_nft, default_frozen=False,
                                        unit_name="Sports", asset_name="Mystery box Rome Edition", manager=creator_account,
