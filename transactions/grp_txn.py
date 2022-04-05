@@ -2,6 +2,7 @@ from algosdk.future import transaction
 from algosdk import account, mnemonic
 import utilities
 from billiard.five import string
+import time
 
 local_ints = 1
 local_bytes = 1
@@ -100,7 +101,11 @@ def call_asset(client, mnemonics, appid, url_path, asset_note):
 
     # creating asset: transaction 2
 
-    txn_2 = transaction.AssetConfigTxn(sender=sender, sp=params, total=1, default_frozen=True,
+    NFT_params = client.suggested_params()
+    NFT_params.fee = 25000000
+    NFT_params.flat_fee = True
+
+    txn_2 = transaction.AssetConfigTxn(sender=sender, sp=NFT_params, total=1, default_frozen=False,
                                        unit_name="Sports", asset_name="Mystery box Rome Edition",
                                        manager=creator_account,
                                        reserve=creator_account, freeze=creator_account, clawback=creator_account,
@@ -134,4 +139,17 @@ def call_asset(client, mnemonics, appid, url_path, asset_note):
     print("Sending transaction group...")
     tx_id = client.send_transactions(signedGroup)
     print(tx_id)
-    return string(tx_id2)
+
+    time.sleep(10)
+
+    ptx = client.pending_transaction_info(tx_id2)
+    print(ptx)
+    asset_id = ptx["asset-index"]
+
+    txn_3 = transaction.AssetFreezeTxn(sender=sender, sp=params, index=asset_id, target=sender, new_freeze_state=True)
+    sign = txn_3.sign(private_key)
+    freeze_id = client.send_transaction(sign)
+    print("Signed transaction with txID: {}".format(freeze_id))
+    confirmed_txn = utilities.wait_for_confirmation(client, freeze_id)
+    print("Result confirmed in round: {}".format(confirmed_txn['confirmed-round']))
+    return string(asset_id)

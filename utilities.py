@@ -3,6 +3,7 @@ import base64
 import os
 import time
 from algosdk.v2client import indexer
+import json
 
 
 # compile program used to compile the source code, used when new application is created
@@ -37,6 +38,21 @@ def load_resource(res):
     with open(path, "rb") as fin:
         data = fin.read()
     return data
+
+
+def print_created_asset(client, account, assetid):
+    # note: if you have an indexer instance available it is easier to just use this
+    # response = myindexer.accounts(asset_id = assetid)
+    # then use 'account_info['created-assets'][0] to get info on the created asset
+    account_info = client.account_info(account)
+    idx = 0
+    for my_account_info in account_info['created-assets']:
+        scrutinized_asset = account_info['created-assets'][idx]
+        idx = idx + 1
+        if scrutinized_asset['index'] == assetid:
+            print("Asset ID: {}".format(scrutinized_asset['index']))
+            print(json.dumps(my_account_info['params'], indent=4))
+            break
 
 
 def Today_seconds():

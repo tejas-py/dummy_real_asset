@@ -4,6 +4,7 @@ import transactions.grp_txn
 import transactions.user_NFT
 import transactions.total_NFT
 import transactions.unfrozen_NFT
+import transactions.unfreeze_nft
 from flask_cors import CORS
 import time
 
@@ -39,7 +40,7 @@ def mintNFT():
             # sleeping code for 3 seconds so that previous transaction can be verified on the node
             time.sleep(3)
             quantity += 1
-    return "NFT minted successfully. Transaction id of your Minted NFT(s): {}.".format(asset_txn_id)
+    return "NFT minted successfully. Your Minted NFT(s): {}.".format(asset_txn_id)
 
 
 # Get total NFT by user.
@@ -52,9 +53,8 @@ def userNFT(address):
 # Get total NFT
 @app.route('/totalNFT')
 def totalNFT():
-    response = indexerConnection.search_assets(name="Mystery box Rome Edition", unit="Sports")
-    total_number = len(response)
-    return total_number
+    all_nft = transactions.total_NFT.total_assets()
+    return all_nft
 
 
 # Get unfroze NFT
@@ -62,6 +62,16 @@ def totalNFT():
 def unfrozenNFT():
     unfrozen_NFT = transactions.unfrozen_NFT.total_Unfrozen()
     return unfrozen_NFT
+
+
+# Update NFT to unfroze
+@app.route('/updateNFT', methods=['POST'])
+def updateNFT():
+    nft_details = request.get_json()
+    passphrase = nft_details['passphrase']
+    nft_id = nft_details['asset_id']
+    asset_config = transactions.unfreeze_nft.nft_config(algod_client, passphrase, nft_id)
+    return asset_config
 
 
 if __name__ == "__main__":
