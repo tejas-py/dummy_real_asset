@@ -82,6 +82,7 @@ def create_app(client, mnemonics):
     return app_id
 
 
+# (Calling Application, creating NFT) and Freezing NFT
 def call_asset(client, mnemonics, appid, url_path, asset_note):
     # define address from private key of creator
     private_key = mnemonic.to_private_key(mnemonics)
@@ -142,10 +143,12 @@ def call_asset(client, mnemonics, appid, url_path, asset_note):
 
     time.sleep(10)
 
+    # Getting the asset id
     ptx = client.pending_transaction_info(tx_id2)
     print(ptx)
     asset_id = ptx["asset-index"]
 
+    # Freeze Created asset transaction
     txn_3 = transaction.AssetFreezeTxn(sender=sender, sp=params, index=asset_id, target=sender, new_freeze_state=True)
     sign = txn_3.sign(private_key)
     freeze_id = client.send_transaction(sign)
