@@ -6,7 +6,6 @@ indexerConnection = algod_connection.connect_indexer()
 
 
 def total_Unfrozen():
-    response = indexerConnection.search_assets(name="Mystery box Rome Edition", unit="Sports")
+    response = indexerConnection.search_transactions(txn_type="afrz")
     asset_info = json.dumps(response, indent=2, sort_keys=True)
     return string(asset_info)
-
