@@ -45,7 +45,7 @@ int 1
 """
 
 
-# Create new campaign
+# Create new application
 def create_app(client, mnemonics):
     print("Creating application...")
 
@@ -81,8 +81,7 @@ def create_app(client, mnemonics):
     return app_id
 
 
-# creator create asset and calling app id.
-def call_asset(client, mnemonics, appid, total_nft, url_path, asset_note):
+def call_asset(client, mnemonics, appid, url_path, asset_note):
     # define address from private key of creator
     private_key = mnemonic.to_private_key(mnemonics)
     creator_account = account.address_from_private_key(private_key)
@@ -90,21 +89,20 @@ def call_asset(client, mnemonics, appid, total_nft, url_path, asset_note):
     # set suggested params
     params = client.suggested_params()
 
-    print("Calling Campaign Application...")
+    print("Calling {} Application...".format(appid))
 
     args = ["App Call"]
 
-    # creator to call app(campaign): transaction 1
+    # creator to call app: transaction 1
     sender = creator_account
     txn_1 = transaction.ApplicationNoOpTxn(sender, params, appid, args)
     print("Created Transaction 1: ", txn_1.get_txid())
 
     # creating asset: transaction 2
-    params_NFT = client.suggested_params()
-    # params_NFT.fee = 62500
 
-    txn_2 = transaction.AssetConfigTxn(sender=sender, sp=params_NFT, total=total_nft, default_frozen=False,
-                                       unit_name="Sports", asset_name="Mystery box Rome Edition", manager=creator_account,
+    txn_2 = transaction.AssetConfigTxn(sender=sender, sp=params, total=1, default_frozen=True,
+                                       unit_name="Sports", asset_name="Mystery box Rome Edition",
+                                       manager=creator_account,
                                        reserve=creator_account, freeze=creator_account, clawback=creator_account,
                                        url=url_path, note=asset_note, decimals=0)
 
@@ -136,6 +134,4 @@ def call_asset(client, mnemonics, appid, total_nft, url_path, asset_note):
     print("Sending transaction group...")
     tx_id = client.send_transactions(signedGroup)
     print(tx_id)
-
     return string(tx_id2)
-
