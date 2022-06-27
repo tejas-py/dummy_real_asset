@@ -1,7 +1,7 @@
 # Ignore this file
 
 from algosdk.future import transaction
-from algosdk import account, mnemonic
+from algosdk import account, mnemonic, wallet
 import utilities
 import algod_connection
 
@@ -51,6 +51,7 @@ def optin_asset(client, phase, mnemonics, receiver, assetID):
                                             receiver=receiver,
                                             amt=1,
                                             index=assetID)
+
     sign_txn = transfer.sign(private_key)
     txID = client.send_transaction(sign_txn)
     print("Signed transaction with txID: {}".format(txID))

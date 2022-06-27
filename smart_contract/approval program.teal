@@ -10,14 +10,15 @@ bnz main_l3
 err
 main_l3:
 global GroupSize
-int 2
+int 3
 ==
 txna ApplicationArgs 0
-byte "App Call"
+byte "New Reveal"
 ==
 &&
 bnz main_l5
-err
+int 0
+return
 main_l5:
 int 1
 return
